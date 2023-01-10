@@ -13,8 +13,10 @@ type Credentials struct {
 
 func (c Credentials) Valid() error {
 	val := validator.New()
-	val.Verify(len(c.Username) < 2, "")
-	val.Verify(len(c.Password) < 8, "")
+	val.Verify(len(c.Username) < 2,
+		"имя пользователя должно быть больше или равно двум символам")
+	val.Verify(len(c.Password) < 8,
+		"пароль должен быть больше или равен восьми символам")
 	return val.Verdict()
 }
 
@@ -37,14 +39,24 @@ type User struct {
 }
 
 type UserUpdate struct {
-	Username       string `json:"username"`
-	Status         string `json:"status"`
-	AvatarPath     string `json:"avatarPath"`
-	BackgroundPath string `json:"backgroundPath"`
+	Username       string  `json:"username"`
+	Status         string  `json:"status"`
+	AvatarPath     *string `json:"avatarPath"`
+	BackgroundPath *string `json:"backgroundPath"`
 }
 
 func (u UserUpdate) Valid() error {
 	val := validator.New()
-	val.Verify(len(u.Username) < 2, "")
+	val.Verify(len(u.Username) < 2,
+		"имя пользователя должно быть больше или равно двум символам")
 	return val.Verdict()
+}
+
+func (u UserUpdate) ToUser(userID string) (user User) {
+	user.ID = userID
+	user.Username = u.Username
+	user.Status = u.Status
+	user.AvatarPath = u.AvatarPath
+	user.BackgroundPath = u.BackgroundPath
+	return user
 }

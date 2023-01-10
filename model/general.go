@@ -10,7 +10,7 @@ type Content struct {
 }
 
 type GetAllResp[T any] struct {
-	Content       []T
+	Content       []T `json:"content"`
 	TotalElements int `json:"totalElements"`
 }
 
