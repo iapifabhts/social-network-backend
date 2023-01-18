@@ -42,6 +42,15 @@ definitions:
 info:
   contact: {}
 paths:
+  /meDetails:
+    get:
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.User'
+      tags:
+      - Пользователи
   /signIn:
     post:
       parameters:

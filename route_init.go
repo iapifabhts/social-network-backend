@@ -23,6 +23,7 @@ func routeInit(app *fiber.App) {
 	app.Post("/signIn", userController.SignIn)
 	app.Post("/signUp", userController.SignUp)
 	app.Get("/signOut", sessionChecker.Check, userController.SignOut)
+	app.Get("/meDetails", sessionChecker.Check, userController.MeDetails)
 	app.Get("/users", sessionChecker.Check, userController.AllUsers)
 	app.Get("/users/:userID", sessionChecker.Check, userController.UserByID)
 	app.Patch("/users/:userID", sessionChecker.Check, userController.UpdateUser)

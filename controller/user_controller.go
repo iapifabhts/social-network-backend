@@ -55,6 +55,17 @@ func (c UserController) SignOut(ctx *fiber.Ctx) (err error) {
 }
 
 //@tags Пользователи
+//@success 200 {object} model.User
+//@router /meDetails [get]
+func (c UserController) MeDetails(ctx *fiber.Ctx) error {
+	user, err := c.repo.UserByID(c.sessionStore.Get(ctx, "userID").(string))
+	if err != nil {
+		return err
+	}
+	return ctx.JSON(user)
+}
+
+//@tags Пользователи
 //@param userID path string true "Идентификатор пользователя"
 //@success 200 {object} model.User
 //@router /users/{userID} [get]
