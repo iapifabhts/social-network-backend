@@ -1,0 +1,153 @@
+definitions:
+  model.AllResp-model_User:
+    properties:
+      content:
+        items:
+          $ref: '#/definitions/model.User'
+        type: array
+      totalElements:
+        type: integer
+    type: object
+  model.Credentials:
+    properties:
+      password:
+        type: string
+      username:
+        type: string
+    type: object
+  model.User:
+    properties:
+      avatarPath:
+        type: string
+      backgroundPath:
+        type: string
+      id:
+        type: string
+      status:
+        type: string
+      username:
+        type: string
+    type: object
+  model.UserUpdate:
+    properties:
+      avatarPath:
+        type: string
+      backgroundPath:
+        type: string
+      status:
+        type: string
+      username:
+        type: string
+    type: object
+info:
+  contact: {}
+paths:
+  /signIn:
+    post:
+      parameters:
+      - description: Реквизиты для входа
+        in: body
+        name: credentials
+        required: true
+        schema:
+          $ref: '#/definitions/model.Credentials'
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.User'
+      tags:
+      - Пользователи
+  /signOut:
+    get:
+      responses:
+        "200":
+          description: OK
+      tags:
+      - Пользователи
+  /signUp:
+    post:
+      parameters:
+      - description: Реквизиты для входа
+        in: body
+        name: credentials
+        required: true
+        schema:
+          $ref: '#/definitions/model.Credentials'
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/model.User'
+      tags:
+      - Пользователи
+  /users:
+    get:
+      parameters:
+      - description: Ограничение
+        in: query
+        name: limit
+        type: integer
+      - description: Страница
+        in: query
+        name: page
+        type: integer
+      - description: Поиск по имени
+        in: query
+        name: username
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.AllResp-model_User'
+      tags:
+      - Пользователи
+  /users/{userID}:
+    delete:
+      parameters:
+      - description: Идентификатор пользователя
+        in: path
+        name: userID
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+      tags:
+      - Пользователи
+    get:
+      parameters:
+      - description: Идентификатор пользователя
+        in: path
+        name: userID
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.User'
+      tags:
+      - Пользователи
+    patch:
+      parameters:
+      - description: Идентификатор пользователя
+        in: path
+        name: userID
+        required: true
+        type: string
+      - description: Данные для обновления пользователя
+        in: body
+        name: userUpdate
+        required: true
+        schema:
+          $ref: '#/definitions/model.UserUpdate'
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.User'
+      tags:
+      - Пользователи
+swagger: "2.0"
