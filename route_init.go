@@ -28,4 +28,8 @@ func routeInit(app *fiber.App) {
 	app.Get("/users/:userID", sessionChecker.Check, userController.UserByID)
 	app.Patch("/users/:userID", sessionChecker.Check, userController.UpdateUser)
 	app.Delete("/users/:userID", sessionChecker.Check, userController.DeleteUser)
+	app.Get("/users/:userID/subscribers", sessionChecker.Check, userController.AllSubscribers)
+	app.Post("/users/:userID/subscribers", sessionChecker.Check, userController.Subscribe)
+	app.Delete("/users/:userID/subscribers", sessionChecker.Check, userController.Unsubscribe)
+	app.Get("/users/:userID/subscriptions", sessionChecker.Check, userController.AllSubscriptions)
 }

@@ -58,7 +58,7 @@ func (c UserController) SignOut(ctx *fiber.Ctx) (err error) {
 //@success 200 {object} model.User
 //@router /meDetails [get]
 func (c UserController) MeDetails(ctx *fiber.Ctx) error {
-	user, err := c.repo.UserByID(c.sessionStore.Get(ctx, "userID").(string))
+	user, err := c.repo.UserByID(c.sessionStore.RecipientID(ctx))
 	if err != nil {
 		return err
 	}
@@ -113,6 +113,64 @@ func (c UserController) UpdateUser(ctx *fiber.Ctx) error {
 //@router /users/{userID} [delete]
 func (c UserController) DeleteUser(ctx *fiber.Ctx) error {
 	return c.repo.DeleteUser(ctx.Params("userID"))
+}
+
+//@tags Пользователи
+//@param userID path string true "Идентификатор пользователя"
+//@param subscriberID query string true "Идентификатор пользователя, который хочет подписаться"
+//@success 201 {object} model.AllSubscribersResp
+//@router /users/{userID}/subscribers [post]
+func (c UserController) Subscribe(ctx *fiber.Ctx) error {
+	resp, err := c.repo.Subscribe(c.sessionStore.RecipientID(ctx), ctx.Params("userID"), ctx.Query("subscriberID"))
+	if err != nil {
+		return err
+	}
+	return ctx.Status(http.StatusCreated).JSON(resp.Format())
+}
+
+//@tags Пользователи
+//@param userID path string true "Идентификатор пользователя"
+//@param subscriberID query string true "Идентификатор пользователя, который хочет отписаться"
+//@success 200 {object} model.AllSubscribersResp
+//@router /users/{userID}/subscribers [delete]
+func (c UserController) Unsubscribe(ctx *fiber.Ctx) error {
+	resp, err := c.repo.Unsubscribe(c.sessionStore.RecipientID(ctx), ctx.Params("userID"), ctx.Query("subscriberID"))
+	if err != nil {
+		return err
+	}
+	return ctx.JSON(resp.Format())
+}
+
+//@tags Пользователи
+//@param userID path string true "Идентификатор пользователя"
+//@param limit query int false "Ограничение"
+//@param page query int false "Страница"
+//@param username query string false "Поиск по имени"
+//@success 200 {object} model.AllSubscribersResp
+//@router /users/{userID}/subscribers [get]
+func (c UserController) AllSubscribers(ctx *fiber.Ctx) error {
+	resp, err := c.repo.AllSubscribers(c.sessionStore.RecipientID(ctx), ctx.Params("userID"), ctx.Query("username"),
+		util.QueryUint64(ctx, "limit", "10"), util.QueryUint64(ctx, "page"))
+	if err != nil {
+		return err
+	}
+	return ctx.JSON(resp.Format())
+}
+
+//@tags Пользователи
+//@param userID path string true "Идентификатор пользователя"
+//@param limit query int false "Ограничение"
+//@param page query int false "Страница"
+//@param username query string false "Поиск по имени"
+//@success 200 {object} model.AllSubscriptionsResp
+//@router /users/{userID}/subscriptions [get]
+func (c UserController) AllSubscriptions(ctx *fiber.Ctx) error {
+	resp, err := c.repo.AllSubscriptions(c.sessionStore.RecipientID(ctx), ctx.Params("userID"), ctx.Query("username"),
+		util.QueryUint64(ctx, "limit", "10"), util.QueryUint64(ctx, "page"))
+	if err != nil {
+		return err
+	}
+	return ctx.JSON(resp.Format())
 }
 
 func NewUserController(repo repository.UserRepository, sessionStore *session.Store) UserController {

@@ -13,9 +13,9 @@ type Credentials struct {
 
 func (c Credentials) Valid() error {
 	val := validator.New()
-	val.Verify(len(c.Username) < 2,
+	val.Verify(len([]rune(c.Username)) < 2,
 		"имя пользователя должно быть больше или равно двум символам")
-	val.Verify(len(c.Password) < 8,
+	val.Verify(len([]rune(c.Password)) < 8,
 		"пароль должен быть больше или равен восьми символам")
 	return val.Verdict()
 }
@@ -47,7 +47,7 @@ type UserUpdate struct {
 
 func (u UserUpdate) Valid() error {
 	val := validator.New()
-	val.Verify(len(u.Username) < 2,
+	val.Verify(len([]rune(u.Username)) < 2,
 		"имя пользователя должно быть больше или равно двум символам")
 	return val.Verdict()
 }
@@ -59,4 +59,24 @@ func (u UserUpdate) ToUser(userID string) (user User) {
 	user.AvatarPath = u.AvatarPath
 	user.BackgroundPath = u.BackgroundPath
 	return user
+}
+
+type AllSubscribersResp struct {
+	AllResp[User]
+	IAmSubscribed bool `json:"iAmSubscribed" db:"i_am_subscribed"`
+}
+
+func (r AllSubscribersResp) Format() AllSubscribersResp {
+	r.AllResp = r.AllResp.Format()
+	return r
+}
+
+type AllSubscriptionsResp struct {
+	AllResp[User]
+	SubscribedToMe bool `json:"subscribedToMe"`
+}
+
+func (r AllSubscriptionsResp) Format() AllSubscriptionsResp {
+	r.AllResp = r.AllResp.Format()
+	return r
 }

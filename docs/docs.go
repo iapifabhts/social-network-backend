@@ -203,6 +203,148 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/users/{userID}/subscribers": {
+            "get": {
+                "tags": [
+                    "Пользователи"
+                ],
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Идентификатор пользователя",
+                        "name": "userID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Ограничение",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Страница",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Поиск по имени",
+                        "name": "username",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.AllSubscribersResp"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Пользователи"
+                ],
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Идентификатор пользователя",
+                        "name": "userID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Идентификатор пользователя, который хочет подписаться",
+                        "name": "subscriberID",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/model.AllSubscribersResp"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "Пользователи"
+                ],
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Идентификатор пользователя",
+                        "name": "userID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Идентификатор пользователя, который хочет отписаться",
+                        "name": "subscriberID",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.AllSubscribersResp"
+                        }
+                    }
+                }
+            }
+        },
+        "/users/{userID}/subscriptions": {
+            "get": {
+                "tags": [
+                    "Пользователи"
+                ],
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Идентификатор пользователя",
+                        "name": "userID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Ограничение",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Страница",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Поиск по имени",
+                        "name": "username",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.AllSubscriptionsResp"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -214,6 +356,40 @@ const docTemplate = `{
                     "items": {
                         "$ref": "#/definitions/model.User"
                     }
+                },
+                "totalElements": {
+                    "type": "integer"
+                }
+            }
+        },
+        "model.AllSubscribersResp": {
+            "type": "object",
+            "properties": {
+                "content": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.User"
+                    }
+                },
+                "iAmSubscribed": {
+                    "type": "boolean"
+                },
+                "totalElements": {
+                    "type": "integer"
+                }
+            }
+        },
+        "model.AllSubscriptionsResp": {
+            "type": "object",
+            "properties": {
+                "content": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.User"
+                    }
+                },
+                "subscribedToMe": {
+                    "type": "boolean"
                 },
                 "totalElements": {
                     "type": "integer"

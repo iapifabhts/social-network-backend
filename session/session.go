@@ -27,6 +27,10 @@ func (s *Store) Destroy(ctx *fiber.Ctx) error {
 	return sess.Destroy()
 }
 
+func (s *Store) RecipientID(ctx *fiber.Ctx) string {
+	return s.Get(ctx, "userID").(string)
+}
+
 func New() *Store {
 	return &Store{
 		session.New(),

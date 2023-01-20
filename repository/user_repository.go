@@ -94,10 +94,90 @@ func (r UserRepository) UpdateUser(userUpdate model.UserUpdate, userID string) (
 }
 
 func (r UserRepository) DeleteUser(userID string) (err error) {
-	if _, err = r.sq.Delete("users").Where("user_id = ?", userID).Exec(); err != nil {
+	if err = r.db.QueryRow("DELETE FROM users WHERE user_id = $1", userID).Err(); err != nil {
 		return util.NewError(err, http.StatusInternalServerError, "произошла ошибка при удалении пользователя")
 	}
 	return nil
+}
+
+func (r UserRepository) Subscribe(recipientID, userID, subscriberID string) (
+	resp model.AllSubscribersResp, err error) {
+	if subscriberID == userID {
+		return resp, fiber.NewError(http.StatusBadRequest, "вы не можете подписаться на себя")
+	}
+	if r.userSubscribed(subscriberID, userID) {
+		return resp, fiber.NewError(http.StatusBadRequest, "вы уже подписаны на этого пользователя")
+	}
+	if err = r.db.QueryRow("INSERT INTO subscribers (subscriber_id, user_id) VALUES ($1, $2)", subscriberID, userID).
+		Err(); err != nil {
+		return resp, util.NewError(err, http.StatusInternalServerError,
+			"произошла ошибка при попытке подписаться на пользователя")
+	}
+	if resp, err = r.AllSubscribers(recipientID, userID, "", 3, 0); err != nil {
+		return resp, fiber.NewError(http.StatusInternalServerError,
+			"вы успешно подписались на пользователя, но при обновлении данных на странице произошла ошибка")
+	}
+	return resp, nil
+}
+
+func (r UserRepository) Unsubscribe(recipientID, userID, subscriberID string) (
+	resp model.AllSubscribersResp, err error) {
+	if err = r.db.QueryRow("DELETE FROM subscribers WHERE subscriber_id = $1 AND user_id = $2", subscriberID, userID).
+		Err(); err != nil {
+		return resp, util.NewError(err, http.StatusInternalServerError,
+			"произошла ошибка при попытке отписаться от пользователя")
+	}
+	if resp, err = r.AllSubscribers(recipientID, userID, "", 3, 0); err != nil {
+		return resp, fiber.NewError(http.StatusInternalServerError,
+			"вы успешно отписались от пользователя, но при обновлении данных на странице произошла ошибка")
+	}
+	return resp, nil
+}
+
+func (r UserRepository) AllSubscribers(recipientID, userID, username string, limit, page uint64) (
+	resp model.AllSubscribersResp, err error) {
+	var rows *sql.Rows
+	if rows, err = r.db.Query("SELECT u.user_id, username, status, avatar_path, "+
+		"background_path, count(*) OVER(), (SELECT count(*) != 0 "+
+		"FROM subscribers WHERE user_id = $1 AND subscriber_id = $2) FROM subscribers s "+
+		"JOIN users u ON subscriber_id = u.user_id WHERE s.user_id = $1 "+
+		"AND lower(username) LIKE lower('%' || $3 || '%') "+
+		"LIMIT $4 OFFSET $5", userID, recipientID, username, limit, limit*page); err != nil {
+		return resp, util.NewError(err, http.StatusInternalServerError,
+			"произошла ошибка при получении подписчиков пользователя")
+	}
+	var u model.User
+	for rows.Next() {
+		if err = rows.Scan(&u.ID, &u.Username, &u.Status, &u.AvatarPath, &u.BackgroundPath,
+			&resp.TotalElements, &resp.IAmSubscribed); err != nil {
+			return resp, util.NewError(err, http.StatusInternalServerError,
+				"произошла ошибка при получении подписчиков пользователя")
+		}
+		resp.Content = append(resp.Content, u)
+	}
+	return resp, nil
+}
+
+func (r UserRepository) AllSubscriptions(recipientID, userID, username string, limit, page uint64) (
+	resp model.AllSubscriptionsResp, err error) {
+	var rows *sql.Rows
+	if rows, err = r.db.Query("SELECT u.user_id, username, status, avatar_path, background_path, count(*) OVER(), "+
+		"(SELECT count(*) != 0 FROM subscribers WHERE subscriber_id = $1 AND user_id = $2) FROM subscribers s "+
+		"JOIN users u USING(user_id) WHERE subscriber_id = $1 AND lower(username) LIKE lower('%' || $3 || '%') "+
+		"LIMIT $4 OFFSET $5", userID, recipientID, username, limit, limit*page); err != nil {
+		return resp, util.NewError(err, http.StatusInternalServerError,
+			"произошла ошибка при получении подписок пользователя")
+	}
+	var u model.User
+	for rows.Next() {
+		if err = rows.Scan(&u.ID, &u.Username, &u.Status, &u.AvatarPath, &u.BackgroundPath,
+			&resp.TotalElements, &resp.SubscribedToMe); err != nil {
+			return resp, util.NewError(err, http.StatusInternalServerError,
+				"произошла ошибка при получении подписок пользователя")
+		}
+		resp.Content = append(resp.Content, u)
+	}
+	return resp, nil
 }
 
 func (r UserRepository) userExists(username string, userID *string) (ok bool) {
@@ -107,6 +187,15 @@ func (r UserRepository) userExists(username string, userID *string) (ok bool) {
 	}
 	query, args := builder.MustSql()
 	if err := r.db.QueryRow(query, args...).Scan(&ok); err != nil {
+		log.Println(err)
+		return false
+	}
+	return ok
+}
+
+func (r UserRepository) userSubscribed(subscriberID, userID string) (ok bool) {
+	if err := r.db.QueryRow("SELECT count(*) != 0 FROM subscribers WHERE subscriber_id = $1 AND user_id = $2",
+		subscriberID, userID).Scan(&ok); err != nil {
 		log.Println(err)
 		return false
 	}

@@ -7,7 +7,7 @@ import (
 
 func New() *sqlx.DB {
 	db, err := sqlx.Open("postgres",
-		"postgresql://postgres:130263@localhost:5432/social_network?sslmode=disable")
+		"postgresql://postgres:4100@localhost:4100/social_network?sslmode=disable")
 	if err != nil {
 		panic(err)
 	}

@@ -8,6 +8,28 @@ definitions:
       totalElements:
         type: integer
     type: object
+  model.AllSubscribersResp:
+    properties:
+      content:
+        items:
+          $ref: '#/definitions/model.User'
+        type: array
+      iAmSubscribed:
+        type: boolean
+      totalElements:
+        type: integer
+    type: object
+  model.AllSubscriptionsResp:
+    properties:
+      content:
+        items:
+          $ref: '#/definitions/model.User'
+        type: array
+      subscribedToMe:
+        type: boolean
+      totalElements:
+        type: integer
+    type: object
   model.Credentials:
     properties:
       password:
@@ -157,6 +179,98 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/model.User'
+      tags:
+      - Пользователи
+  /users/{userID}/subscribers:
+    delete:
+      parameters:
+      - description: Идентификатор пользователя
+        in: path
+        name: userID
+        required: true
+        type: string
+      - description: Идентификатор пользователя, который хочет отписаться
+        in: query
+        name: subscriberID
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.AllSubscribersResp'
+      tags:
+      - Пользователи
+    get:
+      parameters:
+      - description: Идентификатор пользователя
+        in: path
+        name: userID
+        required: true
+        type: string
+      - description: Ограничение
+        in: query
+        name: limit
+        type: integer
+      - description: Страница
+        in: query
+        name: page
+        type: integer
+      - description: Поиск по имени
+        in: query
+        name: username
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.AllSubscribersResp'
+      tags:
+      - Пользователи
+    post:
+      parameters:
+      - description: Идентификатор пользователя
+        in: path
+        name: userID
+        required: true
+        type: string
+      - description: Идентификатор пользователя, который хочет подписаться
+        in: query
+        name: subscriberID
+        required: true
+        type: string
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/model.AllSubscribersResp'
+      tags:
+      - Пользователи
+  /users/{userID}/subscriptions:
+    get:
+      parameters:
+      - description: Идентификатор пользователя
+        in: path
+        name: userID
+        required: true
+        type: string
+      - description: Ограничение
+        in: query
+        name: limit
+        type: integer
+      - description: Страница
+        in: query
+        name: page
+        type: integer
+      - description: Поиск по имени
+        in: query
+        name: username
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.AllSubscriptionsResp'
       tags:
       - Пользователи
 swagger: "2.0"
